@@ -1,13 +1,23 @@
 #include <iostream>
+#include <thread>
 
 using namespace std;
+
+// Our big number type
+typedef unsigned long long int BigInt;
+
+const unsigned supportedThreads = thread::hardware_concurrency();
+thread threads[supportedThreads];
+
+BigInt boundary = 2;
+const BigInt step = 1000000000;
 
 /**
  * Do Collatz algorithm on the number
  *
  * @param numberToTest Number to enumerate
  */
-inline void enumerateNumber(unsigned long long int numberToTest) {
+inline void enumerateNumber(BigInt numberToTest) {
     while (numberToTest != 1) {
         if (numberToTest % 2 == 0) {
             numberToTest = numberToTest >> 1;
@@ -19,6 +29,13 @@ inline void enumerateNumber(unsigned long long int numberToTest) {
 }
 
 /**
+ * A thread worker. This should never ends.
+ */
+void launchThread() {
+
+}
+
+/**
  * Entry point
  *
  * @return 0 or noting, in better case ;)
@@ -26,21 +43,19 @@ inline void enumerateNumber(unsigned long long int numberToTest) {
 int main() {
     ios::sync_with_stdio(false);
 
-    unsigned long long int numberToTest = 2;
-    unsigned short int index = 1;
+    cout << "Supported threads: " << supportedThreads << endl;
+    cout << "Start program" << endl;
 
-    // until overflow
-    while (numberToTest != 1) {
-        if (index == 1) {
-            cout << ".";
-            cout.flush();
-        }
-
-        enumerateNumber(numberToTest);
-
-        numberToTest++;
-        index++;
+    for (int i = 0; i < supportedThreads; i++) {
+        threads[i] = thread(launchThread);
     }
+
+    for (int i = 0; i < supportedThreads; i++) {
+        threads[i].join();
+        cerr << "Thread #" << i << " joined." << endl;
+    }
+
+    cerr << "END" << endl;
 
     return 0;
 }
