@@ -1,3 +1,7 @@
+# JetBrans IDE fiels
+*.iml
+.idea/
+
 # Compiled Object files
 *.slo
 *.lo
