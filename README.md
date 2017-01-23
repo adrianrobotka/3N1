@@ -1,6 +1,8 @@
 # collatz-tester
 Tester program for the Collatz problem
 
+![Collatz problem](http://xkcd.com/710/)
+
 I's just a program written by practise, nothing more.
 
 ## Problem reference
