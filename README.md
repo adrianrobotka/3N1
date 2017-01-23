@@ -1,1 +1,1 @@
-# 3N1
+# Collatz-tester
