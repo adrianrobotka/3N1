@@ -4,7 +4,7 @@
 
 // TODO: test if a thread has an infinite cycle
 
-constexpr int ASSIGNMENT_SCALE = 100000;
+constexpr int ASSIGNMENT_SCALE = 1000000;
 
 using namespace std;
 
@@ -17,6 +17,15 @@ const unsigned supportedThreads = thread::hardware_concurrency();
 thread *threads;
 
 std::mutex output_mutex;
+std::mutex assign_mutex;
+BigInt next_assignment_start = 0;
+BigInt next_assignment_end;
+
+/**
+ * Already checked values
+ */
+BigInt lower_buondary = 0;
+
 
 /**
  * Do Collatz algorithm on the number
@@ -31,20 +40,21 @@ inline void enumerateNumber(BigInt numberToTest) {
             numberToTest *= 3;
             numberToTest++;
         }
+
+        if (numberToTest < lower_buondary)
+            return;
     }
 }
-
-std::mutex assign_mutex;
-int next_assignment_start = -1;
-int next_assignment_end;
 
 /**
  * Returns an assignment for a thread
  * The pointers must be initialized. The values pointed will be filled.
  * The assignment means that x must be tested if start <= x < end
  */
-void getAssignment(BigInt* start, BigInt* end) {
+void getAssignment(BigInt *start, BigInt *end) {
     std::lock_guard<std::mutex> lock(assign_mutex);
+    lower_buondary = *end;
+
     if (next_assignment_start == -1) {
         next_assignment_start = 2;
         next_assignment_end = ASSIGNMENT_SCALE;
@@ -63,7 +73,7 @@ void launchThread() {
     BigInt start, end;
     while (true) {
         getAssignment(&start, &end);
-        for (BigInt i=start; i < end; i++) {
+        for (BigInt i = start; i < end; i++) {
             enumerateNumber(i);
         }
         std::lock_guard<std::mutex> lock(output_mutex);
