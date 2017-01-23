@@ -2,6 +2,13 @@
 *.iml
 .idea/
 
+# Cmake files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+collatz_tester
+
 # Compiled Object files
 *.slo
 *.lo
