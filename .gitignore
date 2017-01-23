@@ -38,3 +38,6 @@ collatz_tester
 *.exe
 *.out
 *.app
+
+# VIM configuration files
+.vimrc
