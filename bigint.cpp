@@ -1,16 +1,16 @@
 #include "bigint.h"
 #include <cassert>
 
-BigInt::BigInt() : big(0), little(0) { }
+BigInt::BigInt() : big(0), little(0) {}
 
-BigInt::BigInt(Unit little) : big(0), little(little) { }
+BigInt::BigInt(Unit little) : big(0), little(little) {}
 
-BigInt::BigInt(Unit big, Unit little) : big(big), little(little) { }
+BigInt::BigInt(Unit big, Unit little) : big(big), little(little) {}
 
-BigInt::BigInt(const BigInt& a) : big(a.big), little(a.little) { }
+BigInt::BigInt(const BigInt &a) : big(a.big), little(a.little) {}
 
 /* This will be used only for multiplication by 3 */
-BigInt& BigInt::operator*=(Unit x) {
+BigInt &BigInt::operator*=(Unit x) {
     assert(x == 3);
     /**
      * The math:
@@ -25,12 +25,12 @@ BigInt& BigInt::operator*=(Unit x) {
     if (little % 3 == MINUS_UNIT_MOD_3)
         ++big;
     if (little % 3 == MINUS_2_UNIT_MOD_3)
-        big+=2;
+        big += 2;
     return *this;
 }
 
 /* This will be used only for dividing by 2 */
-BigInt& BigInt::operator>>=(Unit x) {
+BigInt &BigInt::operator>>=(Unit x) {
     assert(x == 1);
     little >>= 1;
     if ((big & 1) == 1)
@@ -38,7 +38,7 @@ BigInt& BigInt::operator>>=(Unit x) {
     return *this;
 }
 
-BigInt& BigInt::operator++() {
+BigInt &BigInt::operator++() {
     ++little;
     if (little == 0)
         ++big;
@@ -46,7 +46,7 @@ BigInt& BigInt::operator++() {
 }
 
 /* Used for calculating next assignment */
-BigInt& BigInt::operator+=(const BigInt& x) {
+BigInt &BigInt::operator+=(const BigInt &x) {
     little += x.little;
     if (little < x.little) ++big;
     big += x.big;
@@ -58,37 +58,37 @@ Unit BigInt::operator&(Unit x) {
     return little & x;
 }
 
-bool BigInt::operator>=(const BigInt& x) {
+bool BigInt::operator>=(const BigInt &x) {
     if (big != x.big) return big >= x.big;
     return little >= x.little;
 }
 
-bool BigInt::operator==(const BigInt& x){
+bool BigInt::operator==(const BigInt &x) {
     if (big != x.big) return big == x.big;
     return little == x.little;
 }
 
-bool BigInt::operator<=(const BigInt& x) {
+bool BigInt::operator<=(const BigInt &x) {
     if (big != x.big) return big <= x.big;
     return little <= x.little;
 }
 
-bool BigInt::operator!=(const BigInt& x) {
+bool BigInt::operator!=(const BigInt &x) {
     if (big != x.big) return big != x.big;
     return little != x.little;
 }
 
-bool BigInt::operator>(const BigInt& x) {
+bool BigInt::operator>(const BigInt &x) {
     if (big != x.big) return big > x.big;
     return little > x.little;
 }
 
-bool BigInt::operator<(const BigInt& x) {
+bool BigInt::operator<(const BigInt &x) {
     if (big != x.big) return big < x.big;
     return little < x.little;
 }
 
 // occó solution
-std::ostream& operator<<(std::ostream& iostream, const BigInt& x) {
+std::ostream &operator<<(std::ostream &iostream, const BigInt &x) {
     return iostream << "[" << x.big << "," << x.little << "]";
 }

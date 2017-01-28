@@ -1,7 +1,6 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
-#include <cstdint>
 
 // TODO: test if a thread has an infinite cycle
 
@@ -31,7 +30,8 @@ thread *threads;
  * If any error happens, all the threads stop
  * Must be atomic! (this way we do not need mutexes)
  */
-int collatz_error = 0;
+bool collatz_error = 0;
+
 inline void setCollatzErrorFlag() {
     collatz_error = 1;
 }
