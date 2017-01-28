@@ -3,6 +3,12 @@
 #include <iostream>
 
 typedef unsigned long long int Unit;
+constexpr Unit UNIT_LARGEST_BIT = (Unit)2<<63;
+
+// (-2^number_of_bits) % 3
+constexpr Unit MINUS_UNIT_MOD_3 = 2;
+// (-2*2^number_of_bits) % 3
+constexpr Unit MINUS_2_UNIT_MOD_3 = 1;
 
 class BigInt {
     Unit big, little;
@@ -34,6 +40,7 @@ public:
     bool operator!=(const BigInt&);
     bool operator>(const BigInt&);
     bool operator<(const BigInt&);
+    friend std::ostream& operator<<(std::ostream& iostream, const BigInt&);
 };
 
 // fair estimate, around 2^128/3-1
