@@ -1,12 +1,20 @@
 #include <thread>
-#include <mutex>
 #include <sstream>
+#include <csignal>
 #include "methods.h"
 
 using namespace std;
 
 // Worker threads used in the program
 thread *threads;
+
+void signalHandler(int signum) {
+    ostringstream message;
+    message << "Interrupt signal (" << signum << ") received.";
+    log(message);
+
+    exit(EXIT_SUCCESS);
+}
 
 /**
  * Entry point of the program, you know the start point of the bug hunting :D
@@ -29,6 +37,12 @@ int main() {
         // launch thread
         threads[i] = thread(launchThread);
     }
+
+    /**
+     * Register signal handler
+     */
+    signal(SIGTERM, signalHandler);
+    signal(SIGINT, signalHandler);
 
     /*
      * There is some work in the background...
