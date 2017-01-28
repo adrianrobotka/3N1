@@ -8,23 +8,38 @@ constexpr int ASSIGNMENT_SCALE = 1000000;
 
 using namespace std;
 
-// Our big number type
+/**
+ * Our big number type
+ */
 typedef unsigned long long int BigInt;
 
-// Split declaration from initialisation: supportedThreads not const enough
-// according to g++ (idk why it doesn't work)
+/**
+ * Split declaration from initialisation: supportedThreads not const enough
+ * according to g++ (idk why it doesn't work)
+ */
 const unsigned supportedThreads = thread::hardware_concurrency();
 thread *threads;
 
+/**
+ * This mutex ensures that the writes on stdout don't get mixed
+ */
 std::mutex output_mutex;
+
+/**
+ * This mutex ensures that assign functions are not called simultaneously
+ */
 std::mutex assign_mutex;
+
+/**
+ *  Stores what to assign next
+ */
 BigInt next_assignment_start = 0;
 BigInt next_assignment_end;
 
 /**
  * Already checked values
  */
-BigInt lower_buondary = 0;
+BigInt lower_boundary = 0;
 
 
 /**
@@ -41,7 +56,7 @@ inline void enumerateNumber(BigInt numberToTest) {
             numberToTest++;
         }
 
-        if (numberToTest < lower_buondary)
+        if (numberToTest < lower_boundary)
             return;
     }
 }
@@ -53,7 +68,7 @@ inline void enumerateNumber(BigInt numberToTest) {
  */
 void getAssignment(BigInt *start, BigInt *end) {
     std::lock_guard<std::mutex> lock(assign_mutex);
-    lower_buondary = *end;
+    lower_boundary = *end;
 
     if (next_assignment_start == -1) {
         next_assignment_start = 2;
