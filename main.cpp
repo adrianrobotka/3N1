@@ -10,13 +10,13 @@ using namespace std;
 /**
  * Our big number type
  */
-typedef unsigned long long int BigInt;
+#include "bigint.h"
+//typedef unsigned long long int BigInt;
 
 /**
  * The (number's maximum value)/3-1 is always manageable
  * This is because we cannot test overflow (without inline asm)
  */
-const BigInt LARGEST_MANAGEABLE_NUMBER = UINT64_MAX/3-1;
 
 const BigInt ASSIGNMENT_SCALE = 10000000;
 
