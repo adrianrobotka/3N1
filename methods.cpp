@@ -11,7 +11,7 @@ mutex log_mutex;
 mutex assign_mutex;
 
 // A thread will enumerate ASSIGNMENT_STEP numbers. This is a MAGIC constant
-constexpr int assignment_step = 100000;
+constexpr int ASSIGNMENT_STEP = 10000;
 
 // The next assignment number. This means already checked values too
 BigInt next_assignment_start = 1;
@@ -20,7 +20,7 @@ BigInt next_assignment_start = 1;
  * If any error happens, all the threads stop
  * Must be atomic! (this way we do not need mutexes)
  */
-bool collatz_error = 0;
+bool run_forrest_run = true;
 
 /*
  * ------------------------------------------------- Method bodies --------------------------------------------------
@@ -65,45 +65,38 @@ void log(ostringstream &message) {
 /**
  * Returns the next assignment for a thread
  */
-void getNextAssignment(BigInt *start, BigInt *end) {
+void getNextAssignment(BigInt *start) {
     // Thread lock
     lock_guard<mutex> lock(assign_mutex);
 
     *start = next_assignment_start;
 
     // Increase global assignment
-    next_assignment_start += assignment_step;
-
-    *end = next_assignment_start;
+    next_assignment_start += ASSIGNMENT_STEP;
 }
 
 /**
  * Call when the an error occoure in the Collatz number enumarition process
  */
 inline void setCollatzErrorFlag() {
-    collatz_error = 1;
+    run_forrest_run = false;
 }
-
-inline bool isNoFatalError() {
-    return collatz_error;
-}
-
 
 /**
  * A thread worker. This should never ends.
  */
 void launchThread() {
-    BigInt start, end;
+    BigInt start;
 
-    uint8_t chunker = 0;
+    uint16_t chunker = 1;
 
     // Yupp, yupp
-    while (isNoFatalError()) {
+    while (run_forrest_run) {
         // Get next range for the number enumerations
-        getNextAssignment(&start, &end);
+        getNextAssignment(&start);
 
         // Enumerate numbers in the range
-        for (BigInt i = start; i < end; ++i) {
+        for (int i = 0; i < ASSIGNMENT_STEP; ++i) {
             if (enumerateNumber(i)) {
                 /**
                  * stop on error
@@ -112,7 +105,7 @@ void launchThread() {
 
                 ostringstream message;
                 message << "FATAL ERROR OCCURRED!!!" << endl;
-                message << "Assignment " << start << "-" << end << " failed!" << endl;
+                message << "Assignment " << start << "-" << " failed!" << endl;
                 message << "Testing number " << i << " failed! " << endl;
                 message << "Thread failed, exiting!" << endl;
                 log(message);

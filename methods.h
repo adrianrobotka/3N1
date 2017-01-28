@@ -24,7 +24,7 @@ int getSupportedThreads();
 void log(ostringstream &message);
 
 // Returns an assignment for a thread
-void getNextAssignment(BigInt *start, BigInt *end);
+void getNextAssignment(BigInt *start);
 
 // Thread worker. This should never ends.
 void launchThread();
