@@ -1,10 +1,9 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <cstdint>
 
 // TODO: test if a thread has an infinite cycle
-
-constexpr int ASSIGNMENT_SCALE = 1000000;
 
 using namespace std;
 
@@ -14,11 +13,32 @@ using namespace std;
 typedef unsigned long long int BigInt;
 
 /**
+ * The (number's maximum value)/3-1 is always manageable
+ * This is because we cannot test overflow (without inline asm)
+ */
+constexpr BigInt LARGEST_MANAGEABLE_NUMBER = UINT64_MAX/3 - 1;
+
+constexpr BigInt ASSIGNMENT_SCALE = 10000000;
+
+/**
  * Split declaration from initialisation: supportedThreads not const enough
  * according to g++ (idk why it doesn't work)
  */
 const unsigned supportedThreads = thread::hardware_concurrency();
 thread *threads;
+
+/**
+ * If any error happens, all the threads stop
+ * Must be atomic! (this way we do not need mutexes)
+ */
+int collatz_error = 0;
+inline void setCollatzErrorFlag() {
+    collatz_error = 1;
+}
+
+inline bool isCollatzErrorFlagSet() {
+    return collatz_error;
+}
 
 /**
  * This mutex ensures that the writes on stdout don't get mixed
@@ -48,7 +68,7 @@ BigInt lower_boundary = 2;
  *
  * @param numberToTest Number to enumerate
  */
-inline void enumerateNumber(BigInt numberToTest) {
+inline int enumerateNumber(BigInt numberToTest) {
     /**
      * Lower_boundary is 2, so it always stops if the numberToTest is 1
      */
@@ -56,6 +76,14 @@ inline void enumerateNumber(BigInt numberToTest) {
         if (numberToTest % 2 == 0) {
             numberToTest = numberToTest >> 1;
         } else {
+            /**
+             * This is where the number grows, so we test it only here
+             */
+            if (numberToTest > LARGEST_MANAGEABLE_NUMBER) {
+                std::lock_guard<std::mutex> lock(output_mutex);
+                cout << "Integer overflow" << endl;
+                return 1;
+            }
             numberToTest *= 3;
             numberToTest++;
             /**
@@ -65,6 +93,8 @@ inline void enumerateNumber(BigInt numberToTest) {
             numberToTest = numberToTest >> 1;
         }
     }
+    /* No error */
+    return 0;
 }
 
 /**
@@ -92,10 +122,23 @@ void getAssignment(BigInt *start, BigInt *end) {
  */
 void launchThread() {
     BigInt start, end;
-    while (true) {
+    /* Stop if an error happens in a thread */
+    while (!isCollatzErrorFlagSet()) {
         getAssignment(&start, &end);
         for (BigInt i = start; i < end; i++) {
-            enumerateNumber(i);
+            if (enumerateNumber(i)) {
+                /**
+                 * stop on error
+                 * only here can we know what failed
+                 */
+                std::lock_guard<std::mutex> lock(output_mutex);
+                cout << "Assignment " << start << "-" << end << " failed!"
+                     << endl;
+                cout << "Testing number " << i << " failed! " << endl;
+                cout << "Thread failed, exiting!" << endl;
+                setCollatzErrorFlag();
+                return;
+            }
         }
         std::lock_guard<std::mutex> lock(output_mutex);
         cout << "Assignment " << start << "-" << end << " complete!" << endl;
