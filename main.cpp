@@ -11,12 +11,6 @@ using namespace std;
  * Our big number type
  */
 #include "bigint.h"
-//typedef unsigned long long int BigInt;
-
-/**
- * The (number's maximum value)/3-1 is always manageable
- * This is because we cannot test overflow (without inline asm)
- */
 
 const BigInt ASSIGNMENT_SCALE = 10000000;
 
@@ -53,7 +47,7 @@ std::mutex assign_mutex;
 /**
  *  Stores what to assign next
  */
-BigInt next_assignment_start = 0;
+BigInt next_assignment_start = -1;
 BigInt next_assignment_end;
 
 /**
@@ -108,11 +102,12 @@ inline int enumerateNumber(BigInt numberToTest) {
  */
 void getAssignment(BigInt *start, BigInt *end) {
     std::lock_guard<std::mutex> lock(assign_mutex);
-    lower_boundary = *end;
+    lower_boundary = next_assignment_end;
 
     if (next_assignment_start == -1) {
         next_assignment_start = 2;
         next_assignment_end = ASSIGNMENT_SCALE;
+        if (next_assignment_end < 3) next_assignment_end = 3;
     } else {
         next_assignment_start = next_assignment_end;
         next_assignment_end += ASSIGNMENT_SCALE;
