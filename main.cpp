@@ -38,8 +38,9 @@ BigInt next_assignment_end;
 
 /**
  * Already checked values
+ * initially 2 for minor optimisation (see enumerateNumber)
  */
-BigInt lower_boundary = 0;
+BigInt lower_boundary = 2;
 
 
 /**
@@ -48,16 +49,21 @@ BigInt lower_boundary = 0;
  * @param numberToTest Number to enumerate
  */
 inline void enumerateNumber(BigInt numberToTest) {
-    while (numberToTest != 1) {
+    /**
+     * Lower_boundary is 2, so it always stops if the numberToTest is 1
+     */
+    while (numberToTest >= lower_boundary) {
         if (numberToTest % 2 == 0) {
             numberToTest = numberToTest >> 1;
         } else {
             numberToTest *= 3;
             numberToTest++;
+            /**
+             * Minor optimisation: numberToTest is always even here and does
+             * not change stopping condition
+             */
+            numberToTest = numberToTest >> 1;
         }
-
-        if (numberToTest < lower_boundary)
-            return;
     }
 }
 
