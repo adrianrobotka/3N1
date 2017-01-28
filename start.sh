@@ -2,6 +2,8 @@
 
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
 
+mkdir -p log
+
 LOGFILE="log/$DATE.log"
 PIDFILE="log/collatz.pid"
 
