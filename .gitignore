@@ -2,6 +2,9 @@
 *.iml
 .idea/
 
+# log files
+log/
+
 # Cmake files
 CMakeCache.txt
 CMakeFiles/
