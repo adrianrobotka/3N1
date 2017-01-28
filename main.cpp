@@ -1,12 +1,15 @@
 #include <thread>
+#include <sstream>
+
 #include "methods.h"
 
 using namespace std;
 
+// Worker threads used in the program
 thread *threads;
 
 /**
- * Entry point
+ * Entry point of the program, you know the start point of the bug hunting :D
  *
  * @return 0 or noting, in better case ;)
  */
@@ -16,7 +19,9 @@ int main() {
 
     // Get number of working threads
     int supportedThreads = getSupportedThreads();
-    log("Supported threads: " + strCast(supportedThreads));
+    ostringstream message;
+    message << "Supported threads: " << supportedThreads;
+    log(message);
 
     // Create working threads
     threads = new thread[supportedThreads];
@@ -34,12 +39,16 @@ int main() {
     // This point should never reached
     for (int i = 0; i < supportedThreads; i++) {
         threads[i].join();
-        log("Thread # " + strCast(i) + " joined.");
+        message.clear();
+        message << "Thread # " << i << " joined.";
+        log(message);
     }
 
-    log("End of the program");
+    message.clear();
+    message << "End of the program";
+    log(message);
 
     delete[] threads;
 
-    return 0;
+    return EXIT_FAILURE;
 }

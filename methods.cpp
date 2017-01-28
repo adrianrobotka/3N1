@@ -1,5 +1,25 @@
 #include "methods.h"
 
+/*
+ * --------------------------------------------------- Global vars ---------------------------------------------------
+ */
+
+// Mutex for the log
+mutex log_mutex;
+
+// Mutex for the assignment process
+mutex assign_mutex;
+
+// A thread will enumerate ASSIGNMENT_STEP numbers. This is a MAGIC constant
+constexpr BigInt assignment_step = 100000;
+
+// The next assignment number
+BigInt next_assignment_start = 1;
+
+/*
+ * ------------------------------------------------- Method bodies --------------------------------------------------
+ */
+
 /**
  * Get number of supported threads by the program. It's equals to the number of cores or threads in the CPU
  * @return number of supported threads
@@ -11,50 +31,29 @@ int getSupportedThreads() {
     return thread::hardware_concurrency();
 }
 
-/**
- * Cast int to string
- * @return string from int
- */
-string strCast(int n) {
-    // Convert to number
-    stringstream ss;
-    ss << n;
-    return ss.str();
-}
-
-/**
- * Cast BigInt to string
- * @return string from int
- */
-string strCast(BigInt n) {
-    // Convert to number
-    stringstream ss;
-    ss << n;
-    return ss.str();
-}
-
 /*
  * Log to console
  */
-void log(string message) {
-    // Declare the output
-    string prompt;
-    // Get the time
-    // source: http://stackoverflow.com/questions/16357999/current-date-and-time-as-string
-    time_t rawTime;
-    struct tm *timeInfo;
-    char datetime[80];
-    time(&rawTime);
-    timeInfo = localtime(&rawTime);
-    // Set the time string format
-    strftime(datetime, 80, "%Y-%m-%d %I:%M:%S", timeInfo);
-    // Add prompt sign to the output
-    prompt += datetime;
+void log(ostringstream &message) {
+    /*
+     * Get time to the log prefix
+     */
+    using namespace std::chrono;
+    system_clock::time_point now = system_clock::now();
+    system_clock::duration tp = now.time_since_epoch();
+    time_t tt = system_clock::to_time_t(now);
+    tm t = *localtime(&tt);
+
+    // Buffer to write log prefix
+    char buffer[50];
+    sprintf(buffer, "[%04u-%02u-%02u %02u:%02u:%02u.%03u] ", t.tm_year + 1900,
+            t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec,
+            static_cast<unsigned>(tp / milliseconds(1)));
 
     // Thread lock
     lock_guard<mutex> lock(log_mutex);
 
-    cout << prompt << message << endl;
+    cout << buffer << message.str() << endl;
 }
 
 /**
@@ -78,6 +77,8 @@ void getNextAssignment(BigInt *start, BigInt *end) {
 void launchThread() {
     BigInt start, end;
 
+    uint8_t chunker = 0;
+
     // Yupp, yupp
     while (true) {
         // Get next range for the number enumerations
@@ -88,8 +89,14 @@ void launchThread() {
             enumerateNumber(i);
         }
 
-        // Give some sign of life XD
-        log("Assignment " + strCast(start) + " complete.");
+        if (chunker == 0) {
+            // Give some sign of life XD
+            ostringstream message;
+            message << "Assignment " << start << " complete.";
+            log(message);
+        }
+
+        chunker++;
     }
 }
 
