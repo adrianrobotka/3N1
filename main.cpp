@@ -16,9 +16,9 @@ typedef unsigned long long int BigInt;
  * The (number's maximum value)/3-1 is always manageable
  * This is because we cannot test overflow (without inline asm)
  */
-constexpr BigInt LARGEST_MANAGEABLE_NUMBER = UINT64_MAX/3 - 1;
+const BigInt LARGEST_MANAGEABLE_NUMBER = UINT64_MAX/3-1;
 
-constexpr BigInt ASSIGNMENT_SCALE = 10000000;
+const BigInt ASSIGNMENT_SCALE = 10000000;
 
 /**
  * Split declaration from initialisation: supportedThreads not const enough
@@ -73,8 +73,12 @@ inline int enumerateNumber(BigInt numberToTest) {
      * Lower_boundary is 2, so it always stops if the numberToTest is 1
      */
     while (numberToTest >= lower_boundary) {
-        if (numberToTest % 2 == 0) {
-            numberToTest = numberToTest >> 1;
+        /**
+         * Test if the number is even
+         * Do *not* forget the parentheses!
+         */
+        if ((numberToTest & 1) == 0) {
+            numberToTest >>= 1;
         } else {
             /**
              * This is where the number grows, so we test it only here
@@ -85,12 +89,12 @@ inline int enumerateNumber(BigInt numberToTest) {
                 return 1;
             }
             numberToTest *= 3;
-            numberToTest++;
+            ++numberToTest;
             /**
              * Minor optimisation: numberToTest is always even here and does
              * not change stopping condition
              */
-            numberToTest = numberToTest >> 1;
+            numberToTest >>= 1;
         }
     }
     /* No error */
@@ -125,7 +129,7 @@ void launchThread() {
     /* Stop if an error happens in a thread */
     while (!isCollatzErrorFlagSet()) {
         getAssignment(&start, &end);
-        for (BigInt i = start; i < end; i++) {
+        for (BigInt i = start; i < end; ++i) {
             if (enumerateNumber(i)) {
                 /**
                  * stop on error
